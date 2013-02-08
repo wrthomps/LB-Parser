@@ -24,13 +24,19 @@ File format - .sjs
 ------------------
 The first line of the file contains a comment relating to what packed `.txt` file it relates
 to, for example
+
 	// Resources for SEEN0513.TXT
+
 is the first line of `SEEN0513.sjs`, the script file for the gameplay on May 13th. Following
 that is a blank line, then a set of character declarations of the form
+
 	#character 'Riki'
+
 which represent all of the speakers present in the script within that file. Next is another
 blank line, followed by a set of script lines. An example such line is
+
 	<0009> \{Masato}"...To the fight."
+
 The four-digit number at the start of the line is a line number of sorts, and increments
 every line of the file. If a character speaks the current line, it's represented by
 `\{characterName}`. The remainder of the line is the message displayed in the dialogue box.
