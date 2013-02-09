@@ -20,9 +20,9 @@ Run `go build scriptparse.go` to create the executable. Run the executable with
 	./scriptparse.exe -script ####
 
 where `####` is the four-digit number identifying the script file you wish to parse. For
-example, to parse `SEEN0513.txt`, which contains all of the script for the day of May 13th, run
+example, to parse `SEEN0513.sjs`, which contains all of the script for the day of May 13th, run
 
-	./scriptparse.go -script 0513
+	./scriptparse.exe -script 0513
 
 In the absence of this argument, LB-Parser will use `0513` by default. Output will be in a file
 named `script_####.txt`, using the same four-digit number as the input file.
@@ -60,7 +60,7 @@ a BBcode-compatible forum as part of a Let's Play. Note that the `.sjs` file use
 does not make any divisions for different choices and so you will have to manually remove
 sections that do not correspond with your actual choices.
 
-All major characters, when speaking, are given a 112x110px transparent portrait in front
+All major characters, when speaking, are given a 112x100px transparent portrait in front
 of their line. Minor characters are represented with their name in bold. Line breaks are
 added appropriately to ensure reasonable text spacing.
 
