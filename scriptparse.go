@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"flag"
+	"fmt"
 	"os"
 	"log"
 	"regexp"
@@ -26,6 +28,13 @@ var SPEAKER_MAP = map[string] string {
 	"Voice":	"[img]http://lpix.org/1069379/unknown.png[/img]",
 	"default":	"[img]http://lpix.org/1069379/unknown.png[/img]",
 }
+
+// Command-line flags. Right now only a single argument but there may
+// be some expansion in the future
+var (
+	scriptNumber string
+)
+
 
 // Trims off the beginning line number <xxxx>
 func trimNumber(line string) string {
@@ -100,23 +109,28 @@ func removeExtraneousControls (line string) string {
 	return controlRegex.ReplaceAllString(line, "")
 }
 
+// Run before main is called due to how Go works. Parses all the command line flags
+func init() {
+	flag.StringVar(&scriptNumber, "script", "0513", "The script number to be parsed, e.g. 0513")
+	flag.Parse()
+}
+
 func main() {
 	// Open our raw input file and create the output file that will contain
 	// the trimmed script
-
-	// TODO: Get rid of the hard-coded filenames and take a command-line parameter.
-	//   Won't be hard to do.
-	rawFile, err := os.Open("SEEN2603.sjs")
+	rawFile, err := os.Open("SEEN" + scriptNumber + ".sjs")
 	if err != nil {
-		log.Fatal("File not found: SEEN2603.sjs")
+		log.Fatal("Unable to open file: SEEN" + scriptNumber + ".sjs")
 	}
 	defer rawFile.Close()
 
-	trimmedFile, err := os.Create("script_2603.txt")
+	trimmedFile, err := os.Create("script_" + scriptNumber + ".txt")
 	if err != nil {
-		log.Fatal("File unable to be created: script_2603.txt")
+		log.Fatal("Unable to create file: script_" + scriptNumber + ".txt")
 	}
 	defer trimmedFile.Close()
+	
+	fmt.Println("Parsing file " + "SEEN" + scriptNumber + ".sjs...")
 
 	rawFileBuf := bufio.NewReader(rawFile)
 	trimmedFileBuf := bufio.NewWriter(trimmedFile)
