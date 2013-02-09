@@ -29,6 +29,25 @@ var SPEAKER_MAP = map[string] string {
 	"default":	"[img]http://lpix.org/1069379/unknown.png[/img]",
 }
 
+var CALENDAR_MAP = map[string] string {
+	"May 13th (Sun)": "[img]http://lpix.org/1071014/BS_DTA0513.png[/img]",
+	"May 14th (Mon)": "[img]http://lpix.org/1071015/BS_DTA0514.png[/img]",
+	"May 15th (Tue)": "[img]http://lpix.org/1071016/BS_DTA0515.png[/img]",
+	"May 16th (Wed)": "[img]http://lpix.org/1071017/BS_DTA0516.png[/img]",
+	"May 17th (Thu)": "[img]http://lpix.org/1071018/BS_DTA0517.png[/img]",
+	"May 18th (Fri)": "[img]http://lpix.org/1071019/BS_DTA0518.png[/img]",
+	"May 19th (Sat)": "[img]http://lpix.org/1071020/BS_DTA0519.png[/img]",
+	"May 20th (Sun)": "[img]http://lpix.org/1071021/BS_DTA0520.png[/img]",
+	"May 21st (Mon)": "[img]http://lpix.org/1071022/BS_DTA0521.png[/img]",
+	"May 22nd (Tue)": "[img]http://lpix.org/1071023/BS_DTA0522.png[/img]",
+	"May 23rd (Wed)": "[img]http://lpix.org/1071024/BS_DTA0523.png[/img]",
+	"May 24th (Thu)": "[img]http://lpix.org/1071025/BS_DTA0524.png[/img]",
+	"May 25th (Fri)": "[img]http://lpix.org/1071026/BS_DTA0525.png[/img]",
+	"May 26th (Sat)": "[img]http://lpix.org/1071027/BS_DTA0526.png[/img]",
+	"May 27th (Sun)": "[img]http://lpix.org/1071028/BS_DTA0527.png[/img]",
+	"May 28th (Mon)": "[img]http://lpix.org/1071029/BS_DTA0528.png[/img]",
+}
+
 // Command-line flags. Right now only a single argument but there may
 // be some expansion in the future
 var (
@@ -93,6 +112,15 @@ func bbEncodeLine(speaker, prevSpeaker, message string) string {
 	return encodedSpeaker + message
 }
 
+func encodeDate(message string) string {
+	return CALENDAR_MAP[strings.TrimSpace(message)] + "\n"
+}
+
+// Returns true iff the input string is a date indicator
+func isDate(message string) bool {
+	return CALENDAR_MAP[strings.TrimSpace(message)] != ""
+}
+
 // Returns true iff we want to consider this line in the script. We do this
 // by checking if there is a line number at the start, because we want to
 // consider a line iff it begins with a line number
@@ -113,6 +141,13 @@ func removeExtraneousControls (line string) string {
 func init() {
 	flag.StringVar(&scriptNumber, "script", "0513", "The script number to be parsed, e.g. 0513")
 	flag.Parse()
+}
+
+func writeOutputLine(trimmedFileBuf *bufio.Writer, finalEncode string) {
+	if _, writeErr := trimmedFileBuf.WriteString(finalEncode); writeErr != nil {
+		log.Println(writeErr.Error())
+	}
+	trimmedFileBuf.Flush()
 }
 
 func main() {
@@ -157,6 +192,8 @@ func main() {
 		trimmedLine := trimNumber(line)
 		speaker, message := splitMessage(trimmedLine)
 		message = removeExtraneousControls(message)
+
+
 		finalEncode := bbEncodeLine(speaker, prevSpeaker, message)
 
 		// Is the current line narration or speech?
@@ -173,9 +210,11 @@ func main() {
 		prevWasSpeaker = currentIsSpeaker
 		prevSpeaker = speaker
 
-		if _, writeErr := trimmedFileBuf.WriteString(finalEncode); writeErr != nil {
-			log.Println(writeErr.Error())
+		// For dates, replace them with the calendar images
+		if isDate(message) {
+			finalEncode = encodeDate(finalEncode)
 		}
-		trimmedFileBuf.Flush()
+
+		writeOutputLine(trimmedFileBuf, finalEncode)
 	}
 }
