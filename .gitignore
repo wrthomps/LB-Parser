@@ -1,4 +1,6 @@
-*.swp
-*~
-*.txt
+*.bak
+*.exe
 *.sjs
+*.swp
+*.txt
+*~
