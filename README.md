@@ -8,17 +8,24 @@ release it.
 
 How it works
 ------------
-LB-Parse takes a `.sjs` file as input. <i>Little Busters!</i> utilizes several of these files.
+LB-Parser takes a `.sjs` file as input. <i>Little Busters!</i> utilizes several of these files.
 The game's engine itself uses a `.sjs` file along with a `.ke` file to create the game
 experience--the former contains dialogue and narration, the latter contains instructions on
 structure and the appearance, change, and animation of character sprites and backgrounds.
 
 Usage
 -----
-Run `go run scriptparse.go` with the proper `.sjs` file in same directory. The output will
-be in a file named `script_####.txt` where #### is the same as the 4-digit number in the
-input file name. For now that name is hardcoded to be `SEEN0513.sjs`. In the future the
-input file will be a command-line argument.
+Run `go build scriptparse.go` to create the executable. Run the executable with
+
+	./scriptparse.exe -script ####
+
+where `####` is the four-digit number identifying the script file you wish to parse. For
+example, to parse `SEEN0513.txt`, which contains all of the script for the day of May 13th, run
+
+	./scriptparse.go -script 0513
+
+In the absence of this argument, LB-Parser will use `0513` by default. Output will be in a file
+named `script_####.txt`, using the same four-digit number as the input file.
 
 File format - .sjs
 ------------------
@@ -57,8 +64,11 @@ All major characters, when speaking, are given a 112x110px transparent portrait 
 of their line. Minor characters are represented with their name in bold. Line breaks are
 added appropriately to ensure reasonable text spacing.
 
+Known issues
+------------
+* The control sequence `\p` is not properly removed, resulting in a literal `p` appearing
+in the ouput wherever this control sequence occurs
+
 Future improvements
 -------------------
-* Remove the hard-coded input file name and make it a command-line argument
 * Add support for calendar images by parsing text such as `May 13th (Sun)`
-* Figure out why an occasional letter "p" appears where it should not
