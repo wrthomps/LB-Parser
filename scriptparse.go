@@ -134,7 +134,12 @@ func isScriptLine(line string) bool {
 // by splitMessage--sending the raw line beforehand will strip out the speaker
 func removeExtraneousControls (line string) string {
 	controlRegex := regexp.MustCompile("\\\\.*{{1}.*}{1}")
-	return controlRegex.ReplaceAllString(line, "")
+	cleanedLine := controlRegex.ReplaceAllString(line, "")
+
+	// Special case: Remove \p sequences
+	cleanedLine = strings.Replace(cleanedLine, "\\p", "", -1)
+
+	return cleanedLine
 }
 
 // Run before main is called due to how Go works. Parses all the command line flags
