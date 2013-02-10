@@ -84,16 +84,21 @@ func splitMessage(line string) (string, string) {
 // After splitting out the speaker and message, consult the speaker map to
 // encode the line into part of the final update
 func bbEncodeLine(speaker, prevSpeaker, message string) string {
+
+	// If there's no speaker, return just the message with maybe a blank line
 	if speaker == "" {
-		return message
+		if narrationSpeechSwap(speaker, prevSpeaker) {
+			return "\n" + message
+		} else {
+			return message
+		}
 	}
+
 	encodedSpeaker := SPEAKER_MAP[speaker]
 
 	// Represent faceless speakers with a bold name. If following a faced-
-	// speaker, add a line break before the text for spacing purposes.
-	// If a faced-speaker follows a faceless speaker, also add a line break
-	// TODO: It's probably more elegant to combine this logic with the speaking
-	//   vs. narration logic in main() somehow.
+	// speaker, add a blank line before the text for spacing purposes.
+	// If a faced-speaker follows a faceless speaker, also add a blank line
 	if encodedSpeaker == "" {
 		if SPEAKER_MAP[prevSpeaker] != "" {
 			encodedSpeaker = "\n"
@@ -103,11 +108,24 @@ func bbEncodeLine(speaker, prevSpeaker, message string) string {
 		encodedSpeaker = "\n" + encodedSpeaker
 	}
 
-	return encodedSpeaker + message
+	finalEncode := encodedSpeaker + message
+
+	// Add a blank line if switching between narration and speech
+	if narrationSpeechSwap(speaker, prevSpeaker) {
+		finalEncode = "\n" + finalEncode
+	}
+	return finalEncode
 }
 
+// Replace dates with their respective calendar images
 func encodeDate(message string) string {
 	return CALENDAR_MAP[strings.TrimSpace(message)] + "\n"
+}
+
+// Returns true iff the previous and current lines differ in regard to
+// whether they are speech or narration
+func narrationSpeechSwap(speaker, prevSpeaker string) bool {
+	return (prevSpeaker == "" && speaker != "") || (prevSpeaker != "" && speaker == "") 
 }
 
 // Returns true iff the input string is a date indicator
@@ -142,6 +160,7 @@ func init() {
 	flag.Parse()
 }
 
+// Writes a single line of output to the encoded script file
 func writeOutputLine(trimmedFileBuf *bufio.Writer, finalEncode string) {
 	if _, writeErr := trimmedFileBuf.WriteString(finalEncode); writeErr != nil {
 		log.Println(writeErr.Error())
@@ -175,7 +194,6 @@ func main() {
 	// Keep track of whether the previous line was speech, and if so,
 	// who was speaking. Use this to space out text with conditional
 	// line breaks
-	prevWasSpeaker := false
 	prevSpeaker := ""
 
 	for err == nil {
@@ -192,21 +210,13 @@ func main() {
 		speaker, message := splitMessage(trimmedLine)
 		message = removeExtraneousControls(message)
 
-
 		finalEncode := bbEncodeLine(speaker, prevSpeaker, message)
-
-		// Is the current line narration or speech?
-		currentIsSpeaker := speaker != ""
 
 		// If we switched between speaking and narrating, add a line break before
 		// the final message
-		if currentIsSpeaker != prevWasSpeaker {
-			finalEncode = "\n" + finalEncode
-		}
 
 		// Save the current speech fields as previous speech fields for the next
 		// iteration
-		prevWasSpeaker = currentIsSpeaker
 		prevSpeaker = speaker
 
 		// For dates, replace them with the calendar images
