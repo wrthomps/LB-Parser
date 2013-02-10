@@ -64,26 +64,20 @@ func trimNumber(line string) string {
 // If there is no speaker, the first return value will be the empty string
 func splitMessage(line string) (string, string) {
 	var speaker, message string
-	speakerEndIndex := 0
+	message = line
 
 	// A speaker is indicated by \{charName} at the start of the line
 	if line[0] == '\\' {
-		// TODO: I know I'm being stupid, there is 100% an obvious and better
-		// way to do this that right now I can't see
-
-		// Iterate from the { until finding the matching }. The speaker name is
-		// everything in between
-		for speakerEndIndex = 2; line[speakerEndIndex] != '}'; speakerEndIndex++ {
-		}
+		// If there is a speaker, the first } on the line will be the matching
+		// brace. No other control sequences can be in the speaker's name
+		speakerEndIndex := strings.Index(line, "}")
 		speaker = line[2:speakerEndIndex]
 
 		// Skip past the } to start the message
 		message = line[speakerEndIndex+1:]
-	} else {
-		// The entire line is the message. TODO: Pretty sure I can just totally omit
-		// this else clause but I'll test that later.
-		message = line[speakerEndIndex:]
-	}
+	} 
+
+	// If there is no speaker, return ("", line)
 	return speaker, message
 }
 
