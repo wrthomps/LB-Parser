@@ -66,9 +66,8 @@ added appropriately to ensure reasonable text spacing.
 
 Known issues
 ------------
-* The control sequence `\p` is not properly removed, resulting in a literal `p` appearing
-in the ouput wherever this control sequence occurs
+None
 
 Future improvements
 -------------------
-* Add support for calendar images by parsing text such as `May 13th (Sun)`
+* Implement spoiler protection by weak cryptography on spoiler data
