@@ -13,21 +13,7 @@ import (
 // Lines we want to turn into a valid script are of the form
 //		<xxxx> [\{charName}]message
 
-var SPEAKER_MAP = map[string] string {
-	"Haruka":	"[img]http://lpix.org/1069382/haruka.png[/img]",
-	"Kengo":	"[img]http://lpix.org/1069381/kengo.png[/img]",
-	"Komari":	"[img]http://lpix.org/1069383/komari.png[/img]",
-	"Kud":		"[img]http://lpix.org/1069384/kud.png[/img]",
-	"Kurugaya":	"[img]http://lpix.org/1069385/kurugaya.png[/img]",
-	"Kyousuke":	"[img]http://lpix.org/1069386/kyousuke.png[/img]",
-	"Masato":	"[img]http://lpix.org/1069377/masato.png[/img]",
-	"Mio":		"[img]http://lpix.org/1069387/mio.png[/img]",
-	"Riki":		"[img]http://lpix.org/1069378/riki.png[/img]",
-	"Rin":		"[img]http://lpix.org/1069388/rin.png[/img]",
-	"Sasami":	"[img]http://lpix.org/1069389/sasami.png[/img]",
-	"Voice":	"[img]http://lpix.org/1069379/unknown.png[/img]",
-	"default":	"[img]http://lpix.org/1069379/unknown.png[/img]",
-}
+var SPEAKER_MAP map[string] string
 
 var CALENDAR_MAP = map[string] string {
 	"May 13th (Sun)": "[img]http://lpix.org/1071014/BS_DTA0513.png[/img]",
@@ -54,6 +40,17 @@ var (
 	scriptNumber string
 )
 
+// Constructs the speaker map
+func constructSpeakers(speakersByte []byte) map[string]string {
+	speakerString := string(speakersByte)
+	speakers := strings.Split(speakerString, "\n")
+	m := make(map[string]string)
+	for i := range speakers {
+		m[strings.Split(speakers[i], ",")[0]] = strings.TrimSpace(strings.Split(speakers[i], ",")[1])
+	}
+
+	return m
+}
 
 // Trims off the beginning line number <xxxx>
 func trimNumber(line string) string {
@@ -154,10 +151,19 @@ func removeExtraneousControls (line string) string {
 	return cleanedLine
 }
 
-// Run before main is called due to how Go works. Parses all the command line flags
+// Parses the command-line flags and reconstructs the speaker map from the
+// spoiler-protected encoded serialization
 func init() {
 	flag.StringVar(&scriptNumber, "script", "0513", "The script number to be parsed, e.g. 0513")
 	flag.Parse()
+
+	encodedSpeakers, err := os.Open("speakers_encoded.txt")
+	if err != nil {
+		log.Fatal("Unable to open file: speakers_encoded.txt")
+	}
+
+	decodedSpeakers := decodeSpeakers(encodedSpeakers)
+	SPEAKER_MAP = constructSpeakers(decodedSpeakers[:len(decodedSpeakers)-1])
 }
 
 // Writes a single line of output to the encoded script file
@@ -211,9 +217,6 @@ func main() {
 		message = removeExtraneousControls(message)
 
 		finalEncode := bbEncodeLine(speaker, prevSpeaker, message)
-
-		// If we switched between speaking and narrating, add a line break before
-		// the final message
 
 		// Save the current speech fields as previous speech fields for the next
 		// iteration
